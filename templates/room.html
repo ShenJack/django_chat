@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% block content %}
+    <div class="alert alert-success" role="alert">
+        Here is Room <a href="/room/{{ room.label }}" class="alert-link">{{ room.label }}</a>
+    </div>
+
+    <div class="container">
+        <div class="input-group">
+
+            <br>
+            <div class="col-lg-10">
+                <div class="input-group">
+                    <input id="message" type="text" class="form-control" placeholder="消息" aria-label="消息">
+                    <span class="input-group-btn">
+        <button id="sendMessage" class="btn btn-default" type="button">发送</button>
+      </span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <br>
+
+
+    <div id="chat" class="list-group">
+
+        {% for message in messages %}
+            {% if message.handle == username %}
+                <a href="#" class="list-group-item list-group-item-info flex-column align-items-start">
+                <div class="d-flex w-100 justify-content-between">
+                    <small>{{ message.timestamp|date:"H:i" }}</small>
+                </div>
+                <p class="mb-1">{{ message.message }}</p>
+                <small>{{ message.handle }}</small>
+            </a>
+            {% endif %}
+            {% if message.handle != username %}
+                <a href="#" class="list-group-item list-group-item-action flex-column align-items-start">
+                <div class="d-flex w-100 justify-content-between">
+                    <small>{{ message.timestamp|date:"H:i" }}</small>
+                </div>
+                <p class="mb-1">{{ message.message }}</p>
+                <small>{{ message.handle }}</small>
+            </a>
+            {% endif %}
+        {% endfor %}
+    </div>
+
+
+
+
+{% endblock %}
+
+{% block title %}
+
+{% endblock %}
+
+{% block afterbody %}
+    <script type="text/javascript">
+        var username = "";
+        var login = false;
+        $.get('/getUser', function (response) {
+            if (response !== 'nologin') {
+                username = response;
+                login = false;
+            }
+        });
+        // When we're using HTTPS, use WSS too.
+        var ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
+        var chatsock = new WebSocket(ws_scheme + '://' + window.location.host + "/room/" + '{{room.label}}');
+
+
+        chatsock.onmessage = function (message) {
+            var ele;
+            var data = JSON.parse(message.data);
+            if (message.data.indexOf('session_key') >= 0) {
+                document.cookie = data.session_key
+            }
+            var chat = $("#chat");
+            if (data.handle !== username) {
+                ele = $('<a href="#" class="list-group-item list-group-item-action flex-column align-items-start"></a>');
+            } else {
+                ele = $('<a href="#" class="list-group-item list-group-item-info flex-column align-items-start"></a>');
+            }
+
+            var divElement = $('<div class="d-flex w-100 justify-content-between"></div>');
+            divElement.append(
+                $('<small></small>').text(data.timestamp)
+            );
+            ele.append(divElement);
+            ele.append(
+                $('<p class="mb-1"></p>').text(data.message)
+            );
+            ele.append(
+                $('<small></small>').text(data.handle)
+            );
+
+            chat.prepend(ele)
+        };
+
+        $("#sendMessage").on("click", function (event) {
+            {
+                var message = {
+                    handle: username,
+                    message: $('#message').val()
+                };
+                chatsock.send(JSON.stringify(message));
+                $("#message").val('');
+                $("#message").focus();
+            }
+            return false;
+        });
+
+    </script>
+{% endblock %}

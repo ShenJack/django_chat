@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% block content %}
+    <div class="container col-lg-5">
+        <form id="form" action="/register" method="post">
+            <div class="input-group input-group-lg ">
+                <input name="username" id="id_username" type="text" class="form-control" placeholder="名字？" aria-label="Username"
+                       aria-describedby="sizing-addon1">
+            </div>
+            <br>
+            <div class="input-group input-group-lg">
+                <input name="password" id="id_password" type="password" class="form-control" placeholder="密码？" aria-label="Username"
+                       aria-describedby="sizing-addon2">
+            </div>
+            <br>
+            <div class="input-group input-group-lg">
+                <input name="password" id="id_password_again" type="password" class="form-control" placeholder="再次输入？" aria-label="Username"
+                       aria-describedby="sizing-addon2">
+            </div>
+        </form>
+        <br>
+        <div class="input-group input-group-sm">
+            <div class="col-lg-3"></div>
+            <button id="id_login" class="btn btn-primary col-lg-6 ">注册</button>
+            <div class="col-lg-3"></div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block afterbody %}
+    <script type="text/javascript">
+        $("#id_login").on('click',function (event) {
+            if($('#id_password_again').val() === $('#id_password').val()){
+                $("#form").submit();
+            }else {
+                alert('两次密码不一致')
+            }
+        })
+    </script>
+
+{% endblock %}

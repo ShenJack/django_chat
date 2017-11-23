@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <div class="container col-lg-5">
+        <form id="login_form" action="/login" method="post">
+            <div class="input-group input-group-lg ">
+                <input id="id_username" name="username" type="text" class="form-control" placeholder="名字？" aria-label="Username"
+                       aria-describedby="sizing-addon1">
+            </div>
+            <br>
+            <div class="input-group input-group-lg">
+                <input id="id_password" name="password" type="password" class="form-control" placeholder="密码？" aria-label="Username"
+                       aria-describedby="sizing-addon2">
+            </div>
+        </form>
+        <br>
+        <div class="input-group input-group-sm">
+            <button id="id_login" class="btn btn-primary col-lg-5">登录</button>
+            <div class="col-lg-2"></div>
+            <a href="/register" class="col-lg-5 btn btn-default" role="button">注册</a>
+        </div>
+    </div>
+{% endblock %}
+
+{% block afterbody %}
+    <script type="text/javascript">
+        $('#id_login').on('click', function (event) {
+            $("#login_form").submit();
+        })
+    </script>
+{% endblock %}

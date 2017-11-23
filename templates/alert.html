@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+
+{% block content %}
+
+    <div class="alert alert-danger" role="alert">
+        <h4 class="alert-heading">{{ alert.alert }}</h4>
+        <p>{{ alert.tip }}
+        </p>
+        <hr>
+        <p class="mb-0">Tip : {{ alert.tip }}</p>
+        <button id="button" class="btn btn-primary">{{ alert.tip }}</button>
+    </div>
+
+
+{% endblock %}
+
+{% block afterbody %}
+    <script type="text/javascript">
+        $('#button').on('click',function (event) {
+            $.post('/create/',{
+                'room_id':'{{ alert.room_id }}'
+            },function (status) {
+                if(status === 'success'){
+                    $("#input_room_id").val('{{ alert.room_id }}');
+                    $("#room_id_form").submit();
+                }
+            })
+        })
+    </script>
+{% endblock %}
