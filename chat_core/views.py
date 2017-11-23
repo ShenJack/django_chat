@@ -21,17 +21,38 @@ def get_room(request):
 
 
 def renderBack(request):
+    try:
+        username = request.session['username']
+    except KeyError:
+        username = ""
+    try:
+        logged = request.session['logged']
+    except KeyError:
+        logged = False
     rooms = reversed(Room.objects.order_by('updateTime')[:50])
     return render(request, 'home.html', {
-        'logged': request.session['logged'],
-        'username': request.session['username'],
+        'logged': logged,
+        'username': username,
         'title': "Home",
         'rooms': rooms
     })
 
 
 def enterRoom(request):
-    if not request.session['logged']:
+    try:
+        username = request.session['username']
+    except KeyError:
+        username = ""
+    try:
+        logged = request.session['logged']
+    except KeyError:
+        logged = False
+
+    try:
+        if not request.session['logged']:
+            return redirect('/login/')
+    except KeyError:
+        request.session['logged'] = False
         return redirect('/login/')
     if len(request.path.strip('/').split('/')) <= 1:
         data = request.POST
@@ -47,8 +68,8 @@ def enterRoom(request):
             })
         messages = reversed(room.messages.order_by('timestamp')[:50])
         return render(request, 'room.html', {
-            'logged': request.session['logged'],
-            'username': request.session['username'],
+            'logged': logged,
+            'username': username,
             'room': room,
             'messages': messages
         })
@@ -60,14 +81,14 @@ def enterRoom(request):
             alert = Alert(room_id, "%s Does Not Exist" % room_id, "Does Not Exist", "试着创建一个？",
                           "/create/%s" % room_id)
             return render(request, 'alert.html', {
-                'logged': request.session['logged'],
-                'username': request.session['username'],
+                'logged': logged,
+                'username': username,
                 'alert': alert,
             })
         messages = reversed(room.messages.order_by('timestamp')[:50])
         return render(request, 'room.html', {
-            'logged': request.session['logged'],
-            'username': request.session['username'],
+            'logged': logged,
+            'username': username,
             'room': room,
             'messages': messages
         })
@@ -87,10 +108,18 @@ def createRoom(request):
 
 
 def doLogin(request):
+    try:
+        username = request.session['username']
+    except KeyError:
+        username = ""
+    try:
+        logged = request.session['logged']
+    except KeyError:
+        logged = False
     if request.method == "GET":
         return render(request, 'login.html', {
-            'logged': request.session['logged'],
-            'username': request.session['username'],
+            'logged': logged,
+            'username': username,
         })
     elif request.method == "POST":
         data = request.POST
@@ -102,16 +131,16 @@ def doLogin(request):
             alert = Alert(alert='名字或者密码错误')
             return render(request, 'alert.html', {
                 'alert': alert,
-                'username': request.session['username'],
-                'logged': request.session['logged']
+                'username': username,
+                'logged': logged
             })
 
         if user.password != data['password']:
             alert = Alert(alert='名字或者密码错误')
             return render(request, 'alert.html', {
                 'alert': alert,
-                'username': request.session['username'],
-                'logged': request.session['logged'],
+                'username': username,
+                'logged': logged,
 
             })
         else:
@@ -130,10 +159,18 @@ def generateKey(username, password):
 
 
 def registerUser(request):
+    try:
+        username = request.session['username']
+    except KeyError:
+        username = ""
+    try:
+        logged = request.session['logged']
+    except KeyError:
+        logged = False
     if request.method == "GET":
         return render(request, 'register.html', {
-            'logged': request.session['logged'],
-            'username': request.session['username']
+            'logged': logged,
+            'username': username
         })
     elif request.method == "POST":
         data = request.POST
@@ -150,13 +187,14 @@ def registerUser(request):
         alert = Alert(alert=username + '已经存在')
         return render(request, 'alert.html', {
             'alert': alert,
-            'logged': request.session['logged'],
-            'username': request.session['username']
+            'logged': logged,
+            'username': username
         })
 
 
 def getUser(request):
-    if request.session['username']:
+    try:
+        username = request.session['username']
         return HttpResponse(request.session['username'])
-    else:
+    except KeyError:
         return HttpResponse('nologin')
