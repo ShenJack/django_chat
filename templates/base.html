@@ -40,7 +40,7 @@
             <a class="nav-link" href="">{{ username }}</a>您好！
             <a class="nav-link" href="/logout/">Logout</a>
         {% endif %}
-        <form id="room_id_form" class="form-inline my-2 my-lg-0" action="room" method="post">
+        <form id="room_id_form" class="form-inline my-2 my-lg-0" action="/room" method="post">
             {% csrf_token %}
 
             <input id="input_room_id" name="room_id" class="form-control mr-sm-2" type="search"
@@ -61,10 +61,7 @@
 {% block afterbody %}{% endblock afterbody %}
 </body>
 <script type="text/javascript">
-    $("#sendButton").on("click", function (event) {
-        $("#room_id_form").submit();
-        return false;
-    })
+
 </script>
 
 </html>

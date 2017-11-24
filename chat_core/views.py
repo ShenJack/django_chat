@@ -4,6 +4,8 @@ from django.http import HttpResponse
 from django.shortcuts import render, redirect
 
 # Create your views here.
+from django.template.loader import render_to_string
+
 from chat_core.models import Room, User
 
 
@@ -61,13 +63,13 @@ def enterRoom(request):
         except Room.DoesNotExist:
             alert = Alert(data['room_id'], "%s Does Not Exist" % data['room_id'], "Does Not Exist", "试着创建一个？",
                           "/create/%s" % data['room_id'])
-            return render(request, 'alert.html', {
-                'logged': request.session['logged'],
-                'username': request.session['username'],
+            return render(request,'alert.html', {
+                'logged': logged,
+                'username': username,
                 'alert': alert,
             })
         messages = reversed(room.messages.order_by('timestamp')[:50])
-        return render(request, 'room.html', {
+        return render(request,'room.html', {
             'logged': logged,
             'username': username,
             'room': room,
@@ -124,7 +126,6 @@ def doLogin(request):
     elif request.method == "POST":
         data = request.POST
         username = data['username']
-        password = data['password']
         try:
             user = User.objects.get(username=username)
         except User.DoesNotExist:

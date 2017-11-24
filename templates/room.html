@@ -5,15 +5,16 @@
     </div>
 
     <div class="container">
-        <div class="input-group">
 
+        <div class="input-group">
             <br>
             <div class="col-lg-10">
                 <div class="input-group">
-                    <input id="message" type="text" class="form-control" placeholder="消息" aria-label="消息">
-                    <span class="input-group-btn">
+                        <input id="message" type="text" class="form-control" placeholder="消息" aria-label="消息">
+                        <span class="input-group-btn">
         <button id="sendMessage" class="btn btn-default" type="button">发送</button>
-      </span>
+                                                </span>
+
                 </div>
             </div>
         </div>
@@ -26,21 +27,21 @@
         {% for message in messages %}
             {% if message.handle == username %}
                 <a href="#" class="list-group-item list-group-item-info flex-column align-items-start">
-                <div class="d-flex w-100 justify-content-between">
-                    <small>{{ message.timestamp|date:"H:i" }}</small>
-                </div>
-                <p class="mb-1">{{ message.message }}</p>
-                <small>{{ message.handle }}</small>
-            </a>
+                    <div class="d-flex w-100 justify-content-between">
+                        <small>{{ message.timestamp|date:"H:i" }}</small>
+                    </div>
+                    <p class="mb-1">{{ message.message }}</p>
+                    <small>{{ message.handle }}</small>
+                </a>
             {% endif %}
             {% if message.handle != username %}
                 <a href="#" class="list-group-item list-group-item-action flex-column align-items-start">
-                <div class="d-flex w-100 justify-content-between">
-                    <small>{{ message.timestamp|date:"H:i" }}</small>
-                </div>
-                <p class="mb-1">{{ message.message }}</p>
-                <small>{{ message.handle }}</small>
-            </a>
+                    <div class="d-flex w-100 justify-content-between">
+                        <small>{{ message.timestamp|date:"H:i" }}</small>
+                    </div>
+                    <p class="mb-1">{{ message.message }}</p>
+                    <small>{{ message.handle }}</small>
+                </a>
             {% endif %}
         {% endfor %}
     </div>
@@ -109,6 +110,12 @@
             }
             return false;
         });
+
+        $("#message").keyup(function (eventt) {
+            if(eventt.keyCode === 13){
+                $("#sendMessage").click();
+            }
+        })
 
     </script>
 {% endblock %}
