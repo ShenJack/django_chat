@@ -1,12 +1,14 @@
+import json
 import time
 
-from django.http import HttpResponse
+from django.core import serializers
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, redirect
 
-# Create your views here.
-from django.template.loader import render_to_string
-
 from chat_core.models import Room, User
+
+
+# Create your views here.
 
 
 class Alert:
@@ -63,13 +65,13 @@ def enterRoom(request):
         except Room.DoesNotExist:
             alert = Alert(data['room_id'], "%s Does Not Exist" % data['room_id'], "Does Not Exist", "试着创建一个？",
                           "/create/%s" % data['room_id'])
-            return render(request,'alert.html', {
+            return render(request, 'alert.html', {
                 'logged': logged,
                 'username': username,
                 'alert': alert,
             })
         messages = reversed(room.messages.order_by('timestamp')[:50])
-        return render(request,'room.html', {
+        return render(request, 'room.html', {
             'logged': logged,
             'username': username,
             'room': room,
@@ -106,7 +108,8 @@ def createRoom(request):
     # return redirect(request, 'room.html', {
     #     'room': room
     # },content_type='application/xhtml+xml')
-    return HttpResponse('success')
+    data = serializers.serialize("json",Room.objects.filter(label=post_data['room_id']))
+    return JsonResponse(data=data,status=201,safe=False)
 
 
 def doLogin(request):
@@ -183,7 +186,7 @@ def registerUser(request):
             user = User.objects.create(username=username, password=password)
             request.session['username'] = username
             request.session['logged'] = True
-            return redirect('/')
+            return HttpResponse(status=201)
 
         alert = Alert(alert=username + '已经存在')
         return render(request, 'alert.html', {
