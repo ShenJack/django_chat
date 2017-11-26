@@ -20,10 +20,6 @@ class Alert:
         self.tipUrl = tipUrl
 
 
-def get_room(request):
-    return render(request, )
-
-
 def renderBack(request):
     try:
         username = request.session['username']
@@ -34,12 +30,13 @@ def renderBack(request):
     except KeyError:
         logged = False
     rooms = reversed(Room.objects.order_by('updateTime')[:50])
-    return render(request, 'home.html', {
-        'logged': logged,
-        'username': username,
-        'title': "Home",
-        'rooms': rooms
-    })
+    # rooms = Room.objects.all()
+    data = [room.as_dict() for room in rooms]
+
+    return HttpResponse(status=200,content=json.dumps({
+        'status':'success',
+        'data':data
+    }))
 
 
 def enterRoom(request):
@@ -54,48 +51,28 @@ def enterRoom(request):
 
     try:
         if not request.session['logged']:
-            return redirect('/login/')
+            return HttpResponse(status=401,content=json.dumps({
+                'error':'请登录后重试'
+            }
+            ))
     except KeyError:
         request.session['logged'] = False
-        return redirect('/login/')
-    if len(request.path.strip('/').split('/')) <= 1:
-        data = request.POST
-        try:
-            room = Room.objects.get(name=data['room_id'])
-        except Room.DoesNotExist:
-            alert = Alert(data['room_id'], "%s Does Not Exist" % data['room_id'], "Does Not Exist", "试着创建一个？",
-                          "/create/%s" % data['room_id'])
-            return render(request, 'alert.html', {
-                'logged': logged,
-                'username': username,
-                'alert': alert,
-            })
-        messages = reversed(room.messages.order_by('timestamp')[:50])
-        return render(request, 'room.html', {
-            'logged': logged,
-            'username': username,
-            'room': room,
-            'messages': messages
-        })
-    else:
-        prefix, room_id = request.path.strip('/').split('/')
-        try:
-            room = Room.objects.get(name=room_id)
-        except Room.DoesNotExist:
-            alert = Alert(room_id, "%s Does Not Exist" % room_id, "Does Not Exist", "试着创建一个？",
-                          "/create/%s" % room_id)
-            return render(request, 'alert.html', {
-                'logged': logged,
-                'username': username,
-                'alert': alert,
-            })
-        messages = reversed(room.messages.order_by('timestamp')[:50])
-        return render(request, 'room.html', {
-            'logged': logged,
-            'username': username,
-            'room': room,
-            'messages': messages
-        })
+
+    data = request.POST
+    try:
+        room = Room.objects.get(name=data['room_id'])
+    except Room.DoesNotExist:
+        alert = Alert(data['room_id'], "%s Does Not Exist" % data['room_id'], "Does Not Exist", "试着创建一个？",
+                      "/create/%s" % data['room_id'])
+        return HttpResponse(status=404,content=json.dumps({
+            'error':data['room_id']+'不存在'
+        }))
+    messages = reversed(room.messages.order_by('timestamp')[:20])
+    data = [i.as_dict() for i in messages]
+    return HttpResponse(status=200,content=json.dumps({
+        'room': room.as_dict(),
+        'messages':data
+    }))
 
 
 def createRoom(request):
@@ -108,8 +85,7 @@ def createRoom(request):
     # return redirect(request, 'room.html', {
     #     'room': room
     # },content_type='application/xhtml+xml')
-    data = serializers.serialize("json",Room.objects.filter(label=post_data['room_id']))
-    return JsonResponse(data=data,status=201,safe=False)
+    return JsonResponse(data=room.as_dict(),status=201,safe=False)
 
 
 def doLogin(request):
@@ -121,45 +97,36 @@ def doLogin(request):
         logged = request.session['logged']
     except KeyError:
         logged = False
-    if request.method == "GET":
-        return render(request, 'login.html', {
-            'logged': logged,
-            'username': username,
+
+    data = request.POST
+    username = data['username']
+
+    try:
+        user = User.objects.get(username=username)
+    except User.DoesNotExist:
+        return JsonResponse(status=401,data={
+            'error':'名字或者密码错误'
         })
-    elif request.method == "POST":
-        data = request.POST
-        username = data['username']
-        try:
-            user = User.objects.get(username=username)
-        except User.DoesNotExist:
-            alert = Alert(alert='名字或者密码错误')
-            return render(request, 'alert.html', {
-                'alert': alert,
-                'username': username,
-                'logged': logged
-            })
 
-        if user.password != data['password']:
-            alert = Alert(alert='名字或者密码错误')
-            return render(request, 'alert.html', {
-                'alert': alert,
-                'username': username,
-                'logged': logged,
-
-            })
-        else:
-            request.session['username'] = username
-            request.session['logged'] = True
-            return redirect('/')
+    if user.password != data['password']:
+        return JsonResponse(status=401, data={
+            'error':'名字或者密码错误'
+        })
+    else:
+        request.session['username'] = username
+        request.session['logged'] = True
+        return JsonResponse(status=200,data={
+            'status':'success'
+        })
 
 
 def doLogout(request):
     request.session['logged'] = False
-    return redirect('/')
-
-
-def generateKey(username, password):
-    return str(time.time()) + username + password
+    user = User.objects.get(username=request.session['username'])
+    return JsonResponse(status=200,data={
+        'status': 'success',
+        'user':user.as_dict()
+    })
 
 
 def registerUser(request):
@@ -186,13 +153,10 @@ def registerUser(request):
             user = User.objects.create(username=username, password=password)
             request.session['username'] = username
             request.session['logged'] = True
-            return HttpResponse(status=201)
+            return HttpResponse(status=201,content=json.dumps(user.as_dict()))
 
-        alert = Alert(alert=username + '已经存在')
-        return render(request, 'alert.html', {
-            'alert': alert,
-            'logged': logged,
-            'username': username
+        return JsonResponse(status=401, data={
+            'error': 'already'
         })
 
 

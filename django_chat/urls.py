@@ -26,5 +26,5 @@ urlpatterns = [
     url(r'^register/?',views.registerUser),
     # url(r'^checkToken/?',views.checkToken),
     url(r'^getUser/?',views.getUser),
-    url(r'^', views.renderBack),
+    url(r'^getRooms/?', views.renderBack),
 ]

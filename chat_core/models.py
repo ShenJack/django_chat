@@ -13,6 +13,9 @@ class Room(models.Model):
     def __unicode__(self):
         return self.label
 
+    def as_dict(self):
+        return {'name': self.name, 'label': self.label, 'update': self.updateTime.strftime("%b %-d %H:%M")}
+
 
 class Message(models.Model):
     room = models.ForeignKey(Room, related_name='messages')
@@ -34,3 +37,7 @@ class Message(models.Model):
 class User(models.Model):
     username = models.TextField()
     password = models.TextField()
+    createTime = models.DateTimeField(default=timezone.now())
+
+    def as_dict(self):
+        return {'name': self.username, 'createTime': self.createTime.timestamp()}
