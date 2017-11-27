@@ -116,7 +116,8 @@ def doLogin(request):
         request.session['username'] = username
         request.session['logged'] = True
         return JsonResponse(status=200,data={
-            'status':'success'
+            'status':'success',
+            'data':user.as_dict()
         })
 
 

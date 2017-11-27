@@ -14,7 +14,7 @@ class Room(models.Model):
         return self.label
 
     def as_dict(self):
-        return {'name': self.name, 'label': self.label, 'update': self.updateTime.strftime("%b %-d %H:%M")}
+        return {'name': self.name, 'label': self.label, 'update': self.updateTime.timestamp()}
 
 
 class Message(models.Model):
