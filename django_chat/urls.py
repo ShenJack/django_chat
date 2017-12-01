@@ -16,15 +16,54 @@ Including another URLconf
 from django.conf.urls import url
 from django.contrib import admin
 from chat_core import views
-
 urlpatterns = [
+    # Django管理页面
     url(r'^admin/?', admin.site.urls),
-    url(r'^room/?', views.enterRoom),
-    url(r'^create/?',views.createRoom),
-    url(r'^login/?', views.doLogin),
-    url(r'^logout/?',views.doLogout),
-    url(r'^register/?',views.registerUser),
-    # url(r'^checkToken/?',views.checkToken),
+
+
+
+    # 获取更多message
+    url(r'^room/moreMSG/?',views.moreMessage),
+
+    # 新建聊天室
+    url(r'^room/create/?',views.createRoom),
+
+    # 获取聊天列表
+    url(r'^room/getRooms/?', views.renderBack),
+
+    # 进入聊天室
+    url(r'^room/enter/?', views.enterRoom),
+
+    # 登陆
+    url(r'^user/login/?', views.doLogin),
+
+    # 登出
+    url(r'^user/logout/?',views.doLogout),
+
+    # 注册用户
+    url(r'^user/register/?',views.registerUser),
+
+    # 获取用户详细信息
     url(r'^getUser/?',views.getUser),
-    url(r'^getRooms/?', views.renderBack),
+
+
+
+    # 获取好友列表
+    url(r'^user/friends/?',views.getFriends),
+
+    # 添加好友
+    url(r'^friend/add/?',views.addFriends),
+
+    # 搜索用户
+    url(r'^friend/search/?',views.searchFreind),
+
+    # 删除好友
+    url(r'^friend/delete/?',views.deleteFriend)
+
+    # 修改备注
+
+    # 获取好友信息
+
+
 ]
+

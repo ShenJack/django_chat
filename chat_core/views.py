@@ -20,6 +20,8 @@ class Alert:
         self.tipUrl = tipUrl
 
 
+
+
 def renderBack(request):
     try:
         username = request.session['username']
@@ -33,9 +35,9 @@ def renderBack(request):
     # rooms = Room.objects.all()
     data = [room.as_dict() for room in rooms]
 
-    return HttpResponse(status=200,content=json.dumps({
-        'status':'success',
-        'data':data
+    return HttpResponse(status=200, content=json.dumps({
+        'status': 'success',
+        'data': data
     }))
 
 
@@ -51,8 +53,8 @@ def enterRoom(request):
 
     try:
         if not request.session['logged']:
-            return HttpResponse(status=401,content=json.dumps({
-                'error':'请登录后重试'
+            return HttpResponse(status=401, content=json.dumps({
+                'error': '请登录后重试'
             }
             ))
     except KeyError:
@@ -62,16 +64,14 @@ def enterRoom(request):
     try:
         room = Room.objects.get(name=data['room_id'])
     except Room.DoesNotExist:
-        alert = Alert(data['room_id'], "%s Does Not Exist" % data['room_id'], "Does Not Exist", "试着创建一个？",
-                      "/create/%s" % data['room_id'])
-        return HttpResponse(status=404,content=json.dumps({
-            'error':data['room_id']+'不存在'
+        return HttpResponse(status=404, content=json.dumps({
+            'error': data['room_id'] + '不存在'
         }))
     messages = reversed(room.messages.order_by('timestamp')[:20])
     data = [i.as_dict() for i in messages]
-    return HttpResponse(status=200,content=json.dumps({
+    return HttpResponse(status=200, content=json.dumps({
         'room': room.as_dict(),
-        'messages':data
+        'messages': data
     }))
 
 
@@ -85,7 +85,7 @@ def createRoom(request):
     # return redirect(request, 'room.html', {
     #     'room': room
     # },content_type='application/xhtml+xml')
-    return JsonResponse(data=room.as_dict(),status=201,safe=False)
+    return JsonResponse(data=room.as_dict(), status=201, safe=False)
 
 
 def doLogin(request):
@@ -104,29 +104,29 @@ def doLogin(request):
     try:
         user = User.objects.get(username=username)
     except User.DoesNotExist:
-        return JsonResponse(status=401,data={
-            'error':'名字或者密码错误'
+        return JsonResponse(status=401, data={
+            'error': '名字或者密码错误'
         })
 
     if user.password != data['password']:
         return JsonResponse(status=401, data={
-            'error':'名字或者密码错误'
+            'error': '名字或者密码错误'
         })
     else:
         request.session['username'] = username
         request.session['logged'] = True
-        return JsonResponse(status=200,data={
-            'status':'success',
-            'data':user.as_dict()
+        return JsonResponse(status=200, data={
+            'status': 'success',
+            'data': user.as_dict()
         })
 
 
 def doLogout(request):
     request.session['logged'] = False
     user = User.objects.get(username=request.session['username'])
-    return JsonResponse(status=200,data={
+    return JsonResponse(status=200, data={
         'status': 'success',
-        'user':user.as_dict()
+        'user': user.as_dict()
     })
 
 
@@ -154,7 +154,7 @@ def registerUser(request):
             user = User.objects.create(username=username, password=password)
             request.session['username'] = username
             request.session['logged'] = True
-            return HttpResponse(status=201,content=json.dumps(user.as_dict()))
+            return HttpResponse(status=201, content=json.dumps(user.as_dict()))
 
         return JsonResponse(status=401, data={
             'error': 'already'
@@ -167,3 +167,50 @@ def getUser(request):
         return HttpResponse(request.session['username'])
     except KeyError:
         return HttpResponse('nologin')
+
+
+# GET MORE MESSAGE
+def moreMessage(request):
+    data = request.POST
+    try:
+        room = Room.objects.get(name=data['room_id'])
+    except Room.DoesNotExist:
+
+        return HttpResponse(status=404, content=json.dumps({
+            'error': data['room_id'] + '不存在'
+        }))
+    messages = reversed(room.messages.order_by('timestamp'))
+    # TODo
+
+
+def getFriends(request):
+    data = request.session
+    username = data['username']
+    try:
+        user = User.objects.get(username=username)
+    except User.DoesNotExist:
+        return HttpResponse(status=403, content=json.dumps({
+            'status': 'error',
+            'error': '不存在'
+        }))
+    return HttpResponse(status=200, content={
+        'status': 'success',
+        'data': [i.as_dict() for i in user.friends.all()]
+    })
+
+# 添加好友
+def addFriends(request):
+    data = request.POST
+    username = data['username']
+    current_user = User.objects.get(username=request.session['username'])
+
+    return None
+
+
+# 搜索好友
+def searchFreind(request):
+    return None
+
+
+def deleteFriend(request):
+    return None
