@@ -6,14 +6,17 @@ from channels.auth import channel_session_user, channel_and_http_session_user_fr
 from channels.sessions import channel_session, http_session, channel_and_http_session
 from django.utils import timezone
 
-from chat_core.models import Room
+from chat_core.models import Room, User
 
 log = logging.getLogger(__name__)
 
 
-@channel_session
+@channel_and_http_session
 def ws_connect(message):
     message.reply_channel.send({"accept": True})
+    user = User.objects.get(username=message.http_session['username'])
+    user.session_id = message.reply_channel.name
+    user.save()
     print("connected")
     try:
         prefix, label = message['path'].strip('/').split('/')
@@ -38,7 +41,7 @@ def ws_connect(message):
     message.channel_session['room'] = room.label
 
 
-@channel_and_http_session_user_from_http
+@channel_and_http_session
 def ws_receive(message):
     room = Room.objects.get(label=message.channel_session['room'])
     room.updateTime = timezone.now()
@@ -63,7 +66,7 @@ def ws_receive(message):
         Group('chat-', channel_layer=message.channel_layer).send({'text': json.dumps(m.as_dict())})
 
 
-@channel_session
+@channel_and_http_session
 def ws_disconnect(message):
     try:
         label = message.channel_session['room']

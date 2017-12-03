@@ -2,6 +2,7 @@ import json
 import time
 
 from django.core import serializers
+from django.core.signals import request_finished
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, redirect
 
@@ -71,11 +72,12 @@ def enterRoom(request):
     data = [i.as_dict() for i in messages]
     return HttpResponse(status=200, content=json.dumps({
         'room': room.as_dict(),
-        'messages': data
+        'data': data
     }))
 
 
 def createRoom(request):
+    request_finished.connect(beforeLogin)
     post_data = request.POST
     try:
         room = Room.objects.get(label=post_data['room_id'])
@@ -87,7 +89,7 @@ def createRoom(request):
     # },content_type='application/xhtml+xml')
     return JsonResponse(data=room.as_dict(), status=201, safe=False)
 
-
+# 长连接开始 websocket链接成功
 def doLogin(request):
     try:
         username = request.session['username']
@@ -214,3 +216,7 @@ def searchFreind(request):
 
 def deleteFriend(request):
     return None
+
+
+def beforeLogin(sender, **kwargs):
+    print("Request finished!")

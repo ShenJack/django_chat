@@ -27,7 +27,7 @@ class Message(models.Model):
     timestamp = models.DateTimeField(default=timezone.now, db_index=True)
 
     def as_dict(self):
-        return {'handle': self.handle, 'message': self.message, 'timestamp': self.timestamp.strftime("%H:%M")}
+        return {'handle': self.handle, 'message': self.message, 'timeStamp': self.timestamp.timestamp() , 'timeString':self.timestamp.strftime("%H:%M")}
 
 
 class Notification(models.Model):
@@ -46,6 +46,7 @@ class User(models.Model):
     password = models.TextField()
     friends = models.ManyToManyField('self')
     createTime = models.DateTimeField(default=timezone.now())
+    session_id = models.TextField(default='')
 
     def as_dict(self):
         return {'nickname': self.nickName, 'name': self.username, 'createTime': self.createTime.timestamp()}
