@@ -21,8 +21,6 @@ class Alert:
         self.tipUrl = tipUrl
 
 
-
-
 def renderBack(request):
     try:
         username = request.session['username']
@@ -60,6 +58,10 @@ def enterRoom(request):
             ))
     except KeyError:
         request.session['logged'] = False
+        return HttpResponse(status=401, content=json.dumps({
+            'error': '请登录后重试'
+        }
+        ))
 
     data = request.POST
     try:
@@ -68,7 +70,7 @@ def enterRoom(request):
         return HttpResponse(status=404, content=json.dumps({
             'error': data['room_id'] + '不存在'
         }))
-    messages = reversed(room.messages.order_by('timestamp')[:20])
+    messages = room.messages.order_by('timestamp')[:20]
     data = [i.as_dict() for i in messages]
     return HttpResponse(status=200, content=json.dumps({
         'room': room.as_dict(),
@@ -88,6 +90,7 @@ def createRoom(request):
     #     'room': room
     # },content_type='application/xhtml+xml')
     return JsonResponse(data=room.as_dict(), status=201, safe=False)
+
 
 # 长连接开始 websocket链接成功
 def doLogin(request):
@@ -199,6 +202,7 @@ def getFriends(request):
         'status': 'success',
         'data': [i.as_dict() for i in user.friends.all()]
     })
+
 
 # 添加好友
 def addFriends(request):
